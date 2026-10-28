@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users can only access their own library
+    match /users/{userId}/books/{workId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Validate writes
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && validBookDocument(request.resource.data);
+
+      allow update: if request.auth != null
+        && request.auth.uid == userId
+        && validBookUpdate(request.resource.data);
+    }
+
+    // No other paths allowed
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+function validBookDocument(data) {
+  return data.keys().hasAll(['workId', 'title', 'isFavorite', 'readingStatus', 'rating', 'createdAt', 'updatedAt'])
+    && data.workId is string
+    && data.title is string
+    && data.isFavorite is bool
+    && data.readingStatus in ['want_to_read', 'reading', 'read']
+    && (data.rating == null || (data.rating is int && data.rating >= 1 && data.rating <= 5))
+    && data.createdAt is int
+    && data.updatedAt is int;
+}
+
+function validBookUpdate(data) {
+  return (!('readingStatus' in data) || data.readingStatus in ['want_to_read', 'reading', 'read'])
+    && (!('rating' in data) || data.rating == null || (data.rating is int && data.rating >= 1 && data.rating <= 5))
+    && (!('isFavorite' in data) || data.isFavorite is bool);
+}
