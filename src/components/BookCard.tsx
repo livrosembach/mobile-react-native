@@ -7,6 +7,7 @@ import {
   Pressable,
   AccessibilityProps,
 } from 'react-native';
+import { Heart } from 'lucide-react-native';
 import { Colors, Typography, Radii, Spacing, Shadows } from '../theme';
 import { getCoverUrl } from '../utils';
 
@@ -64,9 +65,7 @@ export function BookCard({
         {/* Favorite badge */}
         {isFavorite && (
           <View style={styles.favBadge} accessibilityLabel="Favorited">
-            <Text style={styles.favIcon} accessibilityElementsHidden>
-              ♥
-            </Text>
+            <Heart size={14} color={Colors.surface} fill={Colors.surface} />
           </View>
         )}
       </View>

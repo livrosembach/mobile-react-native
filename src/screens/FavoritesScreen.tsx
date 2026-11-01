@@ -11,6 +11,8 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CompositeScreenProps } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Heart, ChevronRight, Star } from 'lucide-react-native';
 import { RootStackParamList, TabParamList } from '../types/navigation';
 import { useLibrary } from '../contexts/LibraryContext';
 import { Colors, Typography, Spacing, Radii, Shadows } from '../theme';
@@ -26,6 +28,7 @@ const { width } = Dimensions.get('window');
 const ITEM_WIDTH = width - Spacing.lg * 2;
 
 export function FavoritesScreen({ navigation }: Props) {
+  const insets = useSafeAreaInsets();
   const { library } = useLibrary();
   const favorites = library.filter((b) => b.isFavorite);
 
@@ -64,15 +67,23 @@ export function FavoritesScreen({ navigation }: Props) {
               {item.title}
             </Text>
             {item.rating !== null && (
-              <Text style={styles.rating}>
-                {'★'.repeat(item.rating)}
-                {'☆'.repeat(5 - item.rating)}
-                <Text style={styles.ratingNum}> {item.rating}/5</Text>
-              </Text>
+              <View style={styles.ratingRow}>
+                <View style={styles.starsInline}>
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star
+                      key={s}
+                      size={14}
+                      color={s <= item.rating! ? Colors.star : Colors.starEmpty}
+                      fill={s <= item.rating! ? Colors.star : 'transparent'}
+                    />
+                  ))}
+                </View>
+                <Text style={styles.ratingNum}>{item.rating}/5</Text>
+              </View>
             )}
           </View>
 
-          <Text style={styles.chevron} accessibilityElementsHidden>›</Text>
+          <ChevronRight size={20} color={Colors.borderStrong} />
         </Pressable>
       );
     },
@@ -95,14 +106,14 @@ export function FavoritesScreen({ navigation }: Props) {
         }
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyIcon}>♡</Text>
+            <Heart size={56} color={Colors.terracottaLight} strokeWidth={1.5} style={{ marginBottom: Spacing.md }} />
             <Text style={styles.emptyTitle}>No favourites yet</Text>
             <Text style={styles.emptyBody}>
               Open a book's detail page and tap the heart to save it here.
             </Text>
           </View>
         }
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, { paddingTop: Math.max(insets.top + Spacing.md, Spacing.xxl) }]}
         showsVerticalScrollIndicator={false}
         accessibilityLabel="Favourited books"
       />
@@ -177,18 +188,20 @@ const styles = StyleSheet.create({
     color: Colors.ink,
     marginBottom: Spacing.xs,
   },
-  rating: {
-    fontSize: 14,
-    color: Colors.star,
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  starsInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
   },
   ratingNum: {
     color: Colors.inkMuted,
     fontSize: 13,
-  },
-  chevron: {
-    fontSize: 22,
-    color: Colors.border,
-    paddingHorizontal: Spacing.xs,
+    marginLeft: Spacing.xs,
   },
   empty: {
     flex: 1,

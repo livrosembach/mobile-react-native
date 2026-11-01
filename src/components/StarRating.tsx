@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Colors, Typography, Spacing, Radii } from '../theme';
+import { View, StyleSheet, Pressable } from 'react-native';
+import { Star } from 'lucide-react-native';
+import { Colors, Spacing } from '../theme';
 
 interface StarRatingProps {
   rating: number | null;
@@ -33,9 +34,12 @@ export function StarRating({
             accessibilityState={{ checked: filled }}
             accessibilityHint={readonly ? undefined : `Rate this book ${star} star${star > 1 ? 's' : ''}`}
           >
-            <Text style={[styles.starIcon, { fontSize: size }, filled ? styles.filled : styles.empty]}>
-              {filled ? '★' : '☆'}
-            </Text>
+            <Star
+              size={size}
+              color={filled ? Colors.star : Colors.starEmpty}
+              fill={filled ? Colors.star : 'transparent'}
+              strokeWidth={filled ? 2 : 1.5}
+            />
           </Pressable>
         );
       })}

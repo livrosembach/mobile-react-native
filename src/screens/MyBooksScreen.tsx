@@ -11,6 +11,8 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CompositeScreenProps } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BookOpen, ChevronRight, Star, LogOut } from 'lucide-react-native';
 import { RootStackParamList, TabParamList } from '../types/navigation';
 import { useLibrary } from '../contexts/LibraryContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -27,6 +29,7 @@ type Props = CompositeScreenProps<
 const STATUS_ORDER: ReadingStatus[] = ['reading', 'want_to_read', 'read'];
 
 export function MyBooksScreen({ navigation }: Props) {
+  const insets = useSafeAreaInsets();
   const { library, setReadingStatus, setRating, loading } = useLibrary();
   const { user, logout } = useAuth();
 
@@ -74,14 +77,19 @@ export function MyBooksScreen({ navigation }: Props) {
             <Text style={styles.bookTitle} numberOfLines={2}>{item.title}</Text>
 
             {/* Star rating inline */}
-            <Text style={styles.stars} accessibilityLabel={item.rating ? `${item.rating} stars` : 'Not rated'}>
-              {item.rating !== null
-                ? '★'.repeat(item.rating) + '☆'.repeat(5 - item.rating)
-                : '☆☆☆☆☆'}
-            </Text>
+            <View style={styles.starsInline} accessibilityLabel={item.rating ? `${item.rating} stars` : 'Not rated'}>
+              {[1, 2, 3, 4, 5].map((s) => (
+                <Star
+                  key={s}
+                  size={13}
+                  color={item.rating !== null && s <= item.rating ? Colors.star : Colors.starEmpty}
+                  fill={item.rating !== null && s <= item.rating ? Colors.star : 'transparent'}
+                />
+              ))}
+            </View>
           </View>
 
-          <Text style={styles.chevron} accessibilityElementsHidden>›</Text>
+          <ChevronRight size={20} color={Colors.borderStrong} />
         </Pressable>
       );
     },
@@ -100,7 +108,7 @@ export function MyBooksScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
       {/* Account header */}
-      <View style={styles.pageHeader}>
+      <View style={[styles.pageHeader, { paddingTop: Math.max(insets.top + Spacing.md, Spacing.xxl) }]}>
         <View>
           <Text style={styles.heading}>My Library</Text>
           <Text style={styles.userEmail}>{user?.email}</Text>
@@ -115,7 +123,7 @@ export function MyBooksScreen({ navigation }: Props) {
 
       {library.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyIcon}>📖</Text>
+          <BookOpen size={56} color={Colors.terracottaLight} strokeWidth={1.5} style={{ marginBottom: Spacing.md }} />
           <Text style={styles.emptyTitle}>Your library is empty</Text>
           <Text style={styles.emptyBody}>
             Discover books and add them to your reading list from the book detail page.
@@ -223,15 +231,11 @@ const styles = StyleSheet.create({
     color: Colors.ink,
     marginBottom: Spacing.xs,
   },
-  stars: {
-    fontSize: 14,
-    color: Colors.star,
-    letterSpacing: 1,
-  },
-  chevron: {
-    fontSize: 22,
-    color: Colors.border,
-    paddingHorizontal: Spacing.xs,
+  starsInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    marginTop: 2,
   },
   empty: {
     flex: 1,

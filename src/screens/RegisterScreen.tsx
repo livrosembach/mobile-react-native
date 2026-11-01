@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AuthStackParamList } from '../types/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/Button';
@@ -18,6 +19,7 @@ import { Colors, Typography, Spacing, Radii } from '../theme';
 type Props = NativeStackScreenProps<AuthStackParamList, 'Register'>;
 
 export function RegisterScreen({ navigation }: Props) {
+  const insets = useSafeAreaInsets();
   const { register } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -57,7 +59,8 @@ export function RegisterScreen({ navigation }: Props) {
       await register(email.trim(), password);
       // Auth state change will navigate to main app
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Registration failed.';
+      console.error('Registration error:', e);
+      const msg = e instanceof Error ? e.message : String(e);
       Alert.alert('Registration Failed', formatFirebaseError(msg));
     } finally {
       setLoading(false);
@@ -70,7 +73,10 @@ export function RegisterScreen({ navigation }: Props) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[
+          styles.container,
+          { paddingTop: Math.max(insets.top + Spacing.xl, Spacing.xxl + Spacing.lg) },
+        ]}
         keyboardShouldPersistTaps="handled"
       >
         {/* Header */}
@@ -146,13 +152,25 @@ export function RegisterScreen({ navigation }: Props) {
 }
 
 function formatFirebaseError(msg: string): string {
+  if (msg.includes('configuration-not-found')) {
+    return 'Authentication is not yet enabled in your Firebase Console. Go to Build > Authentication, click "Get Started", and enable the "Email/Password" sign-in method.';
+  }
+  if (msg.includes('operation-not-allowed')) {
+    return 'Email/Password sign-in is disabled. In Firebase Console, go to Authentication > Sign-in method and enable Email/Password.';
+  }
   if (msg.includes('email-already-in-use')) {
     return 'This email is already registered. Try signing in instead.';
   }
   if (msg.includes('weak-password')) {
-    return 'Please choose a stronger password.';
+    return 'Please choose a stronger password (at least 6 characters).';
   }
-  return 'An error occurred. Please try again.';
+  if (msg.includes('invalid-api-key') || msg.includes('api-key-not-valid')) {
+    return 'Invalid Firebase API key. Please check your .env configuration.';
+  }
+  if (msg.includes('network-request-failed')) {
+    return 'Network error. Please verify your internet connection.';
+  }
+  return msg.replace(/^Firebase:\s*/, '') || 'An error occurred. Please try again.';
 }
 
 const styles = StyleSheet.create({

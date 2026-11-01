@@ -12,6 +12,8 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CompositeScreenProps } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Search as SearchIcon, X, BookOpen, AlertCircle } from 'lucide-react-native';
 import { RootStackParamList, TabParamList } from '../types/navigation';
 import { useBookSearch } from '../hooks/useBookSearch';
 import { useLibrary } from '../contexts/LibraryContext';
@@ -31,6 +33,7 @@ const CARD_MARGIN = Spacing.md;
 const CARD_WIDTH = (width - Spacing.lg * 2 - CARD_MARGIN) / COLUMNS;
 
 export function SearchScreen({ navigation }: Props) {
+  const insets = useSafeAreaInsets();
   const [inputValue, setInputValue] = useState('');
   const { books, loading, loadingMore, error, total, hasMore, search, loadMore, clearSearch } =
     useBookSearch();
@@ -81,8 +84,9 @@ export function SearchScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
       {/* Search bar */}
-      <View style={styles.searchBar}>
+      <View style={[styles.searchBar, { paddingTop: Math.max(insets.top + Spacing.sm, Spacing.xxl) }]}>
         <View style={styles.inputRow}>
+          <SearchIcon size={18} color={Colors.inkSubtle} style={{ marginRight: Spacing.xs }} />
           <TextInput
             style={styles.input}
             value={inputValue}
@@ -105,7 +109,7 @@ export function SearchScreen({ navigation }: Props) {
               accessibilityLabel="Clear search"
               hitSlop={8}
             >
-              <Text style={styles.clearIcon}>✕</Text>
+              <X size={16} color={Colors.inkSubtle} />
             </Pressable>
           )}
         </View>
@@ -133,6 +137,7 @@ export function SearchScreen({ navigation }: Props) {
 
       {error && (
         <View style={styles.center}>
+          <AlertCircle size={48} color={Colors.error} style={{ marginBottom: Spacing.md }} />
           <Text style={styles.errorTitle}>Search failed</Text>
           <Text style={styles.errorBody}>{error}</Text>
           <Button label="Try Again" onPress={handleSearch} variant="secondary" />
@@ -141,7 +146,7 @@ export function SearchScreen({ navigation }: Props) {
 
       {!loading && !error && books.length === 0 && inputValue.trim().length > 0 && (
         <View style={styles.center}>
-          <Text style={styles.emptyIcon}>🔍</Text>
+          <SearchIcon size={48} color={Colors.terracottaLight} style={{ marginBottom: Spacing.md }} />
           <Text style={styles.errorTitle}>No results</Text>
           <Text style={styles.errorBody}>
             No books found for "{inputValue}". Try a different term.
@@ -151,7 +156,7 @@ export function SearchScreen({ navigation }: Props) {
 
       {!loading && !error && books.length === 0 && inputValue.trim().length === 0 && (
         <View style={styles.center}>
-          <Text style={styles.emptyIcon}>📚</Text>
+          <BookOpen size={48} color={Colors.olive} style={{ marginBottom: Spacing.md }} />
           <Text style={styles.promptTitle}>Explore the catalog</Text>
           <Text style={styles.promptBody}>
             Search by title, author, or any keyword to find your next book.
@@ -212,10 +217,6 @@ const styles = StyleSheet.create({
     minHeight: 32,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  clearIcon: {
-    color: Colors.inkSubtle,
-    fontSize: 14,
   },
   searchBtn: {
     height: 48,

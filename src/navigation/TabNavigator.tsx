@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text, StyleSheet, Platform } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
+import { Compass, Search, Heart, BookOpen } from 'lucide-react-native';
 import { TabParamList } from '../types/navigation';
 import { DiscoverScreen } from '../screens/DiscoverScreen';
 import { SearchScreen } from '../screens/SearchScreen';
@@ -9,13 +10,6 @@ import { MyBooksScreen } from '../screens/MyBooksScreen';
 import { Colors, Typography } from '../theme';
 
 const Tab = createBottomTabNavigator<TabParamList>();
-
-const TAB_ICONS: Record<keyof TabParamList, { active: string; inactive: string }> = {
-  Discover: { active: '⬡', inactive: '⬡' },
-  Search: { active: '◎', inactive: '○' },
-  Favorites: { active: '♥', inactive: '♡' },
-  MyBooks: { active: '▣', inactive: '▢' },
-};
 
 const TAB_LABELS: Record<keyof TabParamList, string> = {
   Discover: 'Discover',
@@ -29,13 +23,27 @@ export function TabNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarIcon: ({ focused, color }) => {
-          const icons = TAB_ICONS[route.name];
-          return (
-            <Text style={{ color, fontSize: 20 }}>
-              {focused ? icons.active : icons.inactive}
-            </Text>
-          );
+        tabBarIcon: ({ focused, color, size }) => {
+          const iconSize = size ?? 22;
+          switch (route.name) {
+            case 'Discover':
+              return <Compass size={iconSize} color={color} strokeWidth={focused ? 2.5 : 2} />;
+            case 'Search':
+              return <Search size={iconSize} color={color} strokeWidth={focused ? 2.5 : 2} />;
+            case 'Favorites':
+              return (
+                <Heart
+                  size={iconSize}
+                  color={color}
+                  fill={focused ? color : 'transparent'}
+                  strokeWidth={focused ? 2.5 : 2}
+                />
+              );
+            case 'MyBooks':
+              return <BookOpen size={iconSize} color={color} strokeWidth={focused ? 2.5 : 2} />;
+            default:
+              return null;
+          }
         },
         tabBarLabel: TAB_LABELS[route.name],
         tabBarActiveTintColor: Colors.terracotta,

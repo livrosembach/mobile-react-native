@@ -12,6 +12,8 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CompositeScreenProps } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LogOut, BookOpen, AlertCircle } from 'lucide-react-native';
 import { RootStackParamList, TabParamList } from '../types/navigation';
 import { useBooks } from '../hooks/useBooks';
 import { useLibrary } from '../contexts/LibraryContext';
@@ -32,6 +34,7 @@ const CARD_MARGIN = Spacing.md;
 const CARD_WIDTH = (width - Spacing.lg * 2 - CARD_MARGIN) / COLUMNS;
 
 export function DiscoverScreen({ navigation }: Props) {
+  const insets = useSafeAreaInsets();
   const { books, loading, loadingMore, error, loadMore, refresh } = useBooks();
   const { isFavorite } = useLibrary();
   const { user, logout } = useAuth();
@@ -72,7 +75,7 @@ export function DiscoverScreen({ navigation }: Props) {
   }, [loadingMore]);
 
   const ListHeader = (
-    <View style={styles.headerContainer}>
+    <View style={[styles.headerContainer, { paddingTop: Math.max(insets.top + Spacing.md, Spacing.xxl) }]}>
       <View style={styles.headerTop}>
         <View>
           <Text style={styles.heading}>New Arrivals</Text>
@@ -85,7 +88,7 @@ export function DiscoverScreen({ navigation }: Props) {
           accessibilityLabel="Account and sign out"
           accessibilityHint={`Signed in as ${user?.email ?? ''}. Tap to sign out.`}
         >
-          <Text style={styles.profileIcon}>◎</Text>
+          <LogOut size={22} color={Colors.olive} />
         </Pressable>
       </View>
     </View>
@@ -93,7 +96,7 @@ export function DiscoverScreen({ navigation }: Props) {
 
   if (loading && books.length === 0) {
     return (
-      <View style={styles.center}>
+      <View style={[styles.center, { paddingTop: insets.top }]}>
         <ActivityIndicator size="large" color={Colors.terracotta} />
         <Text style={styles.loadingText}>Curating your discover feed…</Text>
       </View>
@@ -102,8 +105,8 @@ export function DiscoverScreen({ navigation }: Props) {
 
   if (error && books.length === 0) {
     return (
-      <View style={styles.center}>
-        <Text style={styles.emptyIcon}>📚</Text>
+      <View style={[styles.center, { paddingTop: insets.top }]}>
+        <AlertCircle size={48} color={Colors.error} style={{ marginBottom: Spacing.md }} />
         <Text style={styles.errorTitle}>Couldn't load books</Text>
         <Text style={styles.errorBody}>{error}</Text>
         <Button label="Try Again" onPress={refresh} variant="secondary" />
@@ -113,8 +116,8 @@ export function DiscoverScreen({ navigation }: Props) {
 
   if (!loading && books.length === 0) {
     return (
-      <View style={styles.center}>
-        <Text style={styles.emptyIcon}>📖</Text>
+      <View style={[styles.center, { paddingTop: insets.top }]}>
+        <BookOpen size={48} color={Colors.terracotta} style={{ marginBottom: Spacing.md }} />
         <Text style={styles.errorTitle}>No books found</Text>
         <Text style={styles.errorBody}>Pull down to refresh the catalog.</Text>
         <Button label="Refresh" onPress={refresh} variant="secondary" />
@@ -197,10 +200,6 @@ const styles = StyleSheet.create({
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  profileIcon: {
-    fontSize: 24,
-    color: Colors.olive,
   },
   footer: {
     alignItems: 'center',

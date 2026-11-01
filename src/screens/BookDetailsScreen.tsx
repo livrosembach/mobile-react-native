@@ -10,6 +10,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Heart, AlertCircle } from 'lucide-react-native';
 import { RootStackParamList } from '../types/navigation';
 import { useBookDetails } from '../hooks/useBookDetails';
 import { useLibrary } from '../contexts/LibraryContext';
@@ -84,7 +85,7 @@ export function BookDetailsScreen({ route, navigation }: Props) {
   if (error || !book) {
     return (
       <View style={styles.center}>
-        <Text style={styles.emptyIcon}>📕</Text>
+        <AlertCircle size={48} color={Colors.error} style={{ marginBottom: Spacing.md }} />
         <Text style={styles.errorTitle}>Couldn't load this book</Text>
         <Text style={styles.errorBody}>{error ?? 'Unknown error'}</Text>
         <Button label="Try Again" onPress={retry} variant="secondary" />
@@ -133,9 +134,11 @@ export function BookDetailsScreen({ route, navigation }: Props) {
           accessibilityLabel={fav ? 'Remove from favourites' : 'Add to favourites'}
           accessibilityState={{ checked: fav }}
         >
-          <Text style={[styles.favIcon, fav && styles.favIconActive]}>
-            {fav ? '♥' : '♡'}
-          </Text>
+          <Heart
+            size={18}
+            color={fav ? Colors.terracotta : Colors.inkSubtle}
+            fill={fav ? Colors.terracotta : 'transparent'}
+          />
           <Text style={[styles.favLabel, fav && styles.favLabelActive]}>
             {fav ? 'Favourited' : 'Add to Favourites'}
           </Text>
